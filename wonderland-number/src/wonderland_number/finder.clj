@@ -11,3 +11,11 @@
 
 (defn wonderland-number []
   (first (filter is-solution? (range 100000 1000000))))
+
+;;Day 4 exercise: numbers under 1000 which are equal to the sum of the cubes of their digits
+(defn is-sum-of-cubes-solution? [number]
+  (= number (reduce + (map #(let [i (Character/digit % 10)] (* i i i)) (str number)))))
+
+;;Day 4 exercise: numbers under 1000 which are equal to the sum of the cubes of their digits
+(defn wonderland-cube-numbers []
+  (filter is-sum-of-cubes-solution? (range 1000)))

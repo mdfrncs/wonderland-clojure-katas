@@ -16,3 +16,8 @@
       (is (hasAllTheSameDigits? wondernum (* 4 wondernum)))
       (is (hasAllTheSameDigits? wondernum (* 5 wondernum)))
       (is (hasAllTheSameDigits? wondernum (* 6 wondernum))))))
+
+(deftest test-wonderland-cube-numbers
+  (testing "All wonderland cube numbers must be equal to the sum of the cube of their digits"
+    (let [wondernums (wonderland-cube-numbers)]
+      (every? is-sum-of-cubes-solution? wondernums))))
