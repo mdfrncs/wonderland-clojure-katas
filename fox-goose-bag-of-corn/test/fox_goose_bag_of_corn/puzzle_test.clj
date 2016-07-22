@@ -3,6 +3,20 @@
             [fox-goose-bag-of-corn.puzzle :refer :all]
             [clojure.set]))
 
+(defn cross-product [sets symbols]
+  (for [set sets,
+        symbol symbols]
+    (conj set symbol)))
+
+;; Generate all possible game states
+(defn generate-states
+  ([] (generate-states '(:fox :goose :corn :you :boat)))
+  ([symbols] (map vec (keys (group-by sort (generate-states symbols #{#{}} 0)))))
+  ([symbols sets size]
+   (if (> size (count symbols))
+     '()
+     (concat sets (generate-states symbols (cross-product sets symbols) (inc size))))))
+
 (defn validate-move [step1 step2]
   (testing "only you and another thing can move"
     (let [diff1 (clojure.set/difference step1 step2)
@@ -41,5 +55,35 @@
             right-moves (map last crossing-plan)]
         (reduce validate-move left-moves)
         (reduce validate-move middle-moves)
-        (reduce validate-move right-moves )))))
+        (reduce validate-move right-moves)))))
+
+(deftest test-game-failed?
+  (testing "[:goose :corn] is a game failed condition"
+    (is (true? (game-failed? #{:goose :corn}))))
+  (testing "[:goose :fox] is a game failed condition"
+    (is (true? (game-failed? #{:goose :fox}))))
+  ; All other states are valid
+  (let [states (filter #(not (or (= #{:goose :corn} (set %))
+                                 (= #{:goose :fox} (set %)))) (generate-states))]
+    (doseq [state states]
+      (testing (str state " is not a game failing condition")
+        (is (not (true? (game-failed? (set state)))))))))
+
+(deftest test-game-won?
+  (testing "[] [:boat] [:you :goose :fox :corn] is a game won condition"
+    (is (true? (game-won? [[#{} #{:boat} #{:goose :you :fox :corn}] :end])))))
+
+(deftest test-from-to-sets
+  (let [start [:a :b]
+        boat [:c]
+        end [:d :e :f]
+        state [start boat end]]
+    (testing ":start returns first two vectors"
+      (is (= [start boat] (from-to-sets state :start))))
+    (testing ":end returns end and boat vectors"
+      (is (= [end boat] (from-to-sets state :end))))
+    (testing ":boat-to-end returns boat and end vectors"
+      (is (= [boat end] (from-to-sets state :boat-to-end))))
+    (testing ":boat-to-start returns boat and start vectors"
+      (is (= [boat start] (from-to-sets state :boat-to-start))))))
 
